@@ -1,0 +1,14 @@
+{
+  "publishConfig": { "registry": "https://newgen.registry.nodejitsu.com" },
+  "name": "extender",
+  "version": "1.0.0",
+  "main": "extender.js",
+  "author": "Josh Cole <josh.cole@newgenrecruitment.com>",
+  "contributors": [{
+    "name": "Josh Cole",
+    "email": "josh.cole@newgenrecruitment.com"
+  }],
+  "dependencies": {
+    "underscore": "1.7.x"
+  }
+}
