@@ -1,6 +1,6 @@
 {
   "publishConfig": { "registry": "https://newgen.registry.nodejitsu.com" },
-  "name": "extender",
+  "name": "ng-extender",
   "version": "1.0.0",
   "main": "extender.js",
   "author": "Josh Cole <josh.cole@newgenrecruitment.com>",
