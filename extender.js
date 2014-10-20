@@ -26,6 +26,25 @@ ME.extend = function () {
 };
 
 /*
+ * Merges subsequent objects into the first object, without breaking references
+ * or overwriting the original object.
+ * [Usage]
+ *  merge({}, {}, {})
+ */
+ME.merge = function () {
+
+  var args = _.toArray(arguments);
+
+  return ME.extendSmart({
+      objects:    args
+    , deep:       false
+    , ignoreNull: false
+    , unref:      false
+  });
+
+};
+
+/*
  * Extend objects with additional options.
  */
 ME.extendSmart = function (options) {
