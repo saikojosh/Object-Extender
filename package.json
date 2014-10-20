@@ -2,7 +2,7 @@
   "publishConfig": { "registry": "https://newgen.registry.nodejitsu.com" },
   "repository": { "type": "git", "url": "https://github.com/NewGenRecruitment/Extender.git" },
   "name": "ng-extender",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "extender.js",
   "author": "Josh Cole <josh.cole@newgenrecruitment.com>",
   "contributors": [{
