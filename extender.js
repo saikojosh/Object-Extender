@@ -1,5 +1,6 @@
-var ME = module.exports
-  , _  = require('underscore');
+var ME   = module.exports
+  , util = require('util')
+  , _    = require('underscore');
 
 /*
  * Extend the first object with subsequent objects. Specify true as the first
@@ -137,4 +138,40 @@ ME.extendDeep = function() {
  */
 ME.isTrueObject = function (input) {
   return (_.isObject(input) && !_.isArray(input) && !_.isFunction(input));
+};
+
+/*
+ * Used to instantiate a constructor, and inherit the base class if specified.
+ *
+ * [Usage: Extending a base class]
+ *  var MyChildClass = extender.constructor(BaseClass,
+ *    function MyChildClass () {
+ *      BaseClass.apply(this, arguments);
+ *      ...
+ *    }
+ *  );
+ *  MyChildClass.prototype.myFunc = function () {
+ *    this.myFunc.apply(this, arguments);
+ *    ...
+ *  };
+ *
+ * [Usage: Creating a base class]
+ *  var MyBaseClass = extender.constructor(
+ *    function MyBaseClass (a, b, n...) {
+ *      ...
+ *    }
+ *  );
+ *  MyBaseClass.prototype.myFunc = function () {};
+ */
+ME.constructor = function (parent, child) {
+
+  // Creating a constructor without a base class
+  // extender.constructor(function ChildClass () {});
+  if (!_.isFunction(child)) return parent;
+
+  // Creating a constructor by extending a base class
+  // extender.constructor(BaseClass, function ChildClass () {});
+  util.inherits(child, parent);
+  return child;
+
 };
