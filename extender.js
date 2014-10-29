@@ -51,7 +51,7 @@ ME.merge = function () {
 ME.copy = function (object) {
 
   return ME.extendSmart({
-      objects:    object
+      objects:    [object]
     , deep:       true
     , ignoreNull: false
     , unref:      true
