@@ -46,6 +46,20 @@ ME.merge = function () {
 };
 
 /*
+ * Convenience method for creating a new copy of an object.
+ */
+ME.copy = function (object) {
+
+  return ME.extendSmart({
+      objects:    object
+    , deep:       true
+    , ignoreNull: false
+    , unref:      true
+  });
+
+};
+
+/*
  * Extend objects with additional options.
  */
 ME.extendSmart = function (options) {
