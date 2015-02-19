@@ -1,13 +1,28 @@
 {
-  "publishConfig": { "registry": "https://newgen.registry.nodejitsu.com" },
-  "repository": { "type": "git", "url": "https://github.com/NewGenRecruitment/Extender.git" },
-  "name": "ng-extender",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saikojosh/Object-Extender.git"
+  },
+  "bugs": {
+    "url": "https://github.com/saikojosh/Object-Extender/issues"
+  },
+  "name": "object-extender",
   "version": "1.0.6",
-  "main": "extender.js",
-  "author": "Josh Cole <josh.cole@newgenrecruitment.com>",
+  "description": "",
+  "keywords": [
+    "object",
+    "extend",
+    "extender",
+    "assign",
+    "copy",
+    "merge",
+    "deep"
+  ],
+  "main": "objectExtender.js",
+  "author": "Josh Cole <saikojosh@gmail.com>",
   "contributors": [{
     "name": "Josh Cole",
-    "email": "josh.cole@newgenrecruitment.com"
+    "email": "saikojosh@gmail.com"
   }],
   "dependencies": {
     "underscore": "1.7.x"
