@@ -1,60 +1,62 @@
-var ME   = module.exports
-  , util = require('util')
-  , _    = require('underscore');
+var ME   = module.exports;
+var util = require('util');
+var _    = require('underscore');
 
 /*
  * Extend the first object with subsequent objects. Specify true as the first
- * param for deep extend.
+ * param for deep extend. This method will overwrite the first object.
  * [Usage]
- *  <1> extend({}, {}, {}...)
- *  <2> extend(true, {}, {})
+ *  <1> extender.extend({}, {}, {}...);
+ *  <2> extender.extend(true, {}, {});
  */
 ME.extend = function () {
 
-  var args       = _.toArray(arguments)
-    , deepExtend = false;
+  var args       = _.toArray(arguments);
+  var deepExtend = false;
 
   if (typeof args[0] === 'boolean') {
     deepExtend = args[0];
     args.splice(0, 1);
   }
 
-  return ME.extendSmart({
-      objects: args
-    , deep:    deepExtend
+  return ME.smartExtend({
+    objects: args,
+    deep:    deepExtend
   });
 
 };
 
 /*
- * Merges subsequent objects into the first object, without breaking references
- * or overwriting the original object.
+ * Merges all the given objects without breaking references or overwriting the
+ * original object.
  * [Usage]
- *  merge({}, {}, {})
+ *  var newObject = extender.merge({}, {}, {});
  */
 ME.merge = function () {
 
   var args = _.toArray(arguments);
 
-  return ME.extendSmart({
-      objects:    args
-    , deep:       false
-    , ignoreNull: false
-    , unref:      false
+  return ME.smartExtend({
+    objects:    args,
+    deep:       true,
+    ignoreNull: false,
+    unref:      false
   });
 
 };
 
 /*
  * Convenience method for creating a new copy of an object.
+ * [Usage]
+ *  var newObject = extender.copy({});
  */
 ME.copy = function (object) {
 
-  return ME.extendSmart({
-      objects:    [object]
-    , deep:       true
-    , ignoreNull: false
-    , unref:      true
+  return ME.smartExtend({
+    objects:    [object],
+    deep:       true,
+    ignoreNull: false,
+    unref:      true
   });
 
 };
@@ -62,15 +64,15 @@ ME.copy = function (object) {
 /*
  * Extend objects with additional options.
  */
-ME.extendSmart = function (options) {
+ME.smartExtend = function (options) {
 
   var startIndex = 1;
 
   options = _.extend({
-      objects:        []     // an array of objects for extending.
-    , deep:           false  // true extends on multiple levels.
-    , ignoreNull:     true   // false allows null values in later objects to overwrite the initial values.
-    , unref:          true   // true creates a new object rather than modifying the original object (by reference).
+    objects:        [],     // An array of objects for extending.
+    deep:           false,  // Set to true to extend the objects at multiple depths recursively.
+    ignoreNull:     true,   // Set to false to allow null values in later objects to overwrite the initial values.
+    unref:          true    // Set to true to create a new object rather than modifying the original object (by reference).
   }, options);
 
   // Push an empty object onto the front of the array to prevent the original
@@ -80,27 +82,28 @@ ME.extendSmart = function (options) {
     startIndex = 2;  // don't strip null values from the first 2 objects.
   }
 
-  // Remove any null from each object, not including the first object.
+  // Remove any null from each object, not including the first object, if we are
+  // ignoring null values.
   if (options.ignoreNull) {
     for (var o = startIndex, olen = options.objects.length; o < olen; o++) {
       for (var p in options.objects[o]) {
         if (options.objects[o].hasOwnProperty(p)) {
-          if (options.objects[o][p] === null) delete options.objects[o][p];
+          if (options.objects[o][p] === null) { delete options.objects[o][p]; }
         }
       }
     }
   }
 
-  return (options.deep ? ME.extendDeep.apply(null, options.objects) : _.extend.apply(null, options.objects));
+  return (options.deep ? ME.deepExtend.apply(null, options.objects) : _.extend.apply(null, options.objects));
 
 };
 
 /*
  * Recursively extends an object with subsequent objects. VERY BASIC.
  * [Usage]
- *  <1> extendDeep({}, {}...)
+ *  <1> extender.deepExtend({ level2: {} }, { level2: {} }...);
  */
-ME.extendDeep = function() {
+ME.deepExtend = function() {
 
   // Create an array from the arguments and break references to prevent memory leaks.
   var args = _.toArray(arguments);
@@ -121,7 +124,7 @@ ME.extendDeep = function() {
 
           // Original property is also an object, Recurse down to the next level
           if (ME.isTrueObject(original[p])) {
-            original[p] = ME.extendDeep(original[p], args[a][p]);
+            original[p] = ME.deepExtend(original[p], args[a][p]);
           }
 
           // Original property is not an object
@@ -181,7 +184,7 @@ ME.constructor = function (parent, child) {
 
   // Creating a constructor without a base class
   // extender.constructor(function ChildClass () {});
-  if (!_.isFunction(child)) return parent;
+  if (!_.isFunction(child)) { return parent; }
 
   // Creating a constructor by extending a base class
   // extender.constructor(BaseClass, function ChildClass () {});
