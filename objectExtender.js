@@ -62,6 +62,22 @@ ME.copy = function (object) {
 };
 
 /*
+ * Convenience method for specifying default values for object properties.
+ * [Usage]
+ *  var options = extender.defaults({ a: 1, b: 2 }, options);
+ */
+ME.defaults = function (defaults, values) {
+
+  return ME.smartExtend({
+    objects:    [defaults, values],
+    deep:       true,
+    ignoreNull: false,
+    unref:      true
+  });
+
+};
+
+/*
  * Extend objects with additional options.
  */
 ME.smartExtend = function (options) {
