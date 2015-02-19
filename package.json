@@ -7,7 +7,7 @@
     "url": "https://github.com/saikojosh/Object-Extender/issues"
   },
   "name": "object-extender",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A simple utility for extending, copying and merging JavaScript objects.",
   "keywords": [
     "object",
