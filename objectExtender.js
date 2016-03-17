@@ -141,6 +141,7 @@ ME.smartExtend = function (options) {
 
 /*
  * Recursively extends an object with subsequent objects. VERY BASIC.
+ * TODO: Add support for breaking references multiple levels down.
  * [Usage]
  *  <1> extender.deepExtend({ level2: {} }, { level2: {} }...);
  */
