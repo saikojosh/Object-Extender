@@ -4,7 +4,8 @@ var _    = require('underscore');
 
 /*
  * Extend the first object with subsequent objects. Specify true as the first
- * param for deep extend. This method will overwrite the first object.
+ * param for deep extend. This method will overwrite the first object. Nulls and
+ * undefineds in source objects will be ignored.
  * [Usage]
  *  <1> extender.extend({}, {}, {}...);
  *  <2> extender.extend(true, {}, {});
@@ -20,15 +21,19 @@ ME.extend = function () {
   }
 
   return ME.smartExtend({
-    objects: args,
-    deep:    deepExtend
+    objects:         args,
+    deep:            deepExtend,
+    ignoreNull:      true,
+    ignoreUndefined: true,
+    unref:           true
   });
 
 };
 
 /*
- * Merges all the given objects without breaking references or overwriting the
- * original object.
+ * Merges all the given objects into the return value, without breaking
+ * references or overwriting the original object. Nulls and undefineds in source
+ * objects will also be merged in.
  * [Usage]
  *  var newObject = extender.merge({}, {}, {});
  */
@@ -37,26 +42,30 @@ ME.merge = function () {
   var args = _.toArray(arguments);
 
   return ME.smartExtend({
-    objects:    args,
-    deep:       true,
-    ignoreNull: false,
-    unref:      false
+    objects:         args,
+    deep:            true,
+    ignoreNull:      false,
+    ignoreUndefined: false,
+    unref:           false
   });
 
 };
 
 /*
- * Convenience method for creating a new copy of an object.
+ * Convenience method for creating a new copy of an object. This will copy the
+ * object as-is, including nulls and undefinds, it will also break references so
+ * it's a clean copy.
  * [Usage]
  *  var newObject = extender.copy({});
  */
 ME.copy = function (object) {
 
   return ME.smartExtend({
-    objects:    [object],
-    deep:       true,
-    ignoreNull: false,
-    unref:      true
+    objects:         [object],
+    deep:            true,
+    ignoreNull:      false,
+    ignoreUndefined: false,
+    unref:           true
   });
 
 };
@@ -85,10 +94,11 @@ ME.smartExtend = function (options) {
   var startIndex = 1;
 
   options = _.extend({
-    objects:        [],     // An array of objects for extending.
-    deep:           false,  // Set to true to extend the objects at multiple depths recursively.
-    ignoreNull:     true,   // Set to false to allow null values in later objects to overwrite the initial values.
-    unref:          true    // Set to true to create a new object rather than modifying the original object (by reference).
+    objects:        [],      // An array of objects for extending.
+    deep:            false,  // Set to true to extend the objects at multiple depths recursively.
+    ignoreNull:      true,   // Set to false to allow null values in later objects to overwrite the initial values.
+    ignoreUndefined: true,   // Set to false to allow undefined values in later objects to overwrite the initial values.
+    unref:           true    // Set to true to create a new object rather than modifying the original object (by reference).
   }, options);
 
   // Push an empty object onto the front of the array to prevent the original
@@ -106,9 +116,11 @@ ME.smartExtend = function (options) {
 
         // Remove unwanted properties.
         if (
-          typeof options.objects[o][p] === 'undefined' ||
-          options.objects[o][p] === null && options.ignoreNull
-        ) { delete options.objects[o][p]; }
+          (typeof options.objects[o][p] === 'undefined' && options.ignoreUndefined) ||
+          (options.objects[o][p] === null && options.ignoreNull)
+        ) {
+          delete options.objects[o][p];
+        }
 
       }
     }
