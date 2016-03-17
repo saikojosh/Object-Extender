@@ -98,14 +98,18 @@ ME.smartExtend = function (options) {
     startIndex = 2;  // don't strip null values from the first 2 objects.
   }
 
-  // Remove any null from each object, not including the first object, if we are
-  // ignoring null values.
-  if (options.ignoreNull) {
-    for (var o = startIndex, olen = options.objects.length; o < olen; o++) {
-      for (var p in options.objects[o]) {
-        if (options.objects[o].hasOwnProperty(p)) {
-          if (options.objects[o][p] === null) { delete options.objects[o][p]; }
-        }
+  // Remove any nulls and undefineds from each object, not including the first
+  // object. Nulls are only removed if we are ignoring null values.
+  for (var o = startIndex, olen = options.objects.length; o < olen; o++) {
+    for (var p in options.objects[o]) {
+      if (options.objects[o].hasOwnProperty(p)) {
+
+        // Remove unwanted properties.
+        if (
+          typeof options.objects[o][p] === 'undefined' ||
+          options.objects[o][p] === null && options.ignoreNull
+        ) { delete options.objects[o][p]; }
+
       }
     }
   }
