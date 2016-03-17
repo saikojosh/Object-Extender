@@ -72,16 +72,25 @@ ME.copy = function (object) {
 
 /*
  * Convenience method for specifying default values for object properties.
+ * Useful when passing a lot of parameters into a function. The third parameter
+ * 'readOnlyOptions' is optional and allows you to specify values which can not
+ * be overwritten by the consumer of the function, but which you want to appear
+ * in the options hash.
  * [Usage]
- *  var options = extender.defaults({ a: 1, b: 2 }, options);
+ *  function myFunc (options) {
+ *    options = extender.defaults({ a: 1, b: 2 }, options);
+ *    options = extender.defaults({ a: 1, b: 2 }, options, readOnlyOptions);
+ *  };
  */
-ME.defaults = function (defaults, values) {
+ME.defaults = function (defaults, values, readOnlyValues) {
+  readOnlyValues = readOnlyValues || {};
 
   return ME.smartExtend({
-    objects:    [defaults, values],
-    deep:       true,
-    ignoreNull: false,
-    unref:      true
+    objects:         [defaults, values, readOnlyValues],
+    deep:            true,
+    ignoreNull:      false,
+    ignoreUndefined: true,
+    unref:           true
   });
 
 };
