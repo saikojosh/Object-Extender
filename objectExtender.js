@@ -138,8 +138,6 @@ ME.tidyObject = function (obj, options) {
   for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
 
-      console.log('key:', key, typeof obj[key] === 'undefined', options.ignoreUndefined);
-
       // Step down into nested objects and tide those too.
       if (ME.isTrueObject(obj[key])) { ME.tidyObject(obj[key], options); }
 
