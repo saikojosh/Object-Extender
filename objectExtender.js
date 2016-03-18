@@ -119,23 +119,40 @@ ME.smartExtend = function (options) {
 
   // Remove any nulls and undefineds from each object, not including the first
   // object. Nulls are only removed if we are ignoring null values.
-  for (var o = startIndex, olen = options.objects.length; o < olen; o++) {
-    for (var p in options.objects[o]) {
-      if (options.objects[o].hasOwnProperty(p)) {
-
-        // Remove unwanted properties.
-        if (
-          (typeof options.objects[o][p] === 'undefined' && options.ignoreUndefined) ||
-          (options.objects[o][p] === null && options.ignoreNull)
-        ) {
-          delete options.objects[o][p];
-        }
-
-      }
+  if (options.ignoreNull || options.ignoreUndefined) {
+    for (var o = startIndex, olen = options.objects.length; o < olen; o++) {
+      ME.tidyObject(options.objects[o], options);
     }
   }
 
+  // Extend deep or shallow and return the value.
   return (options.deep ? ME.deepExtend.apply(null, options.objects) : _.extend.apply(null, options.objects));
+
+};
+
+/*
+ * Removes undefineds and nulls if the options allow for it.
+ */
+ME.tidyObject = function (obj, options) {
+
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+
+      console.log('key:', key, typeof obj[key] === 'undefined', options.ignoreUndefined);
+
+      // Step down into nested objects and tide those too.
+      if (ME.isTrueObject(obj[key])) { ME.tidyObject(obj[key], options); }
+
+      // Remove unwanted properties.
+      if (
+        (typeof obj[key] === 'undefined' && options.ignoreUndefined) ||
+        (obj[key] === null && options.ignoreNull)
+      ) {
+        delete obj[key];
+      }
+
+    }
+  }
 
 };
 
