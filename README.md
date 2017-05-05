@@ -46,8 +46,7 @@ const mergedObjects = extender.extend([
 }
 ```
 
-
-## Defaults
+## Default Values
 A useful method for passing lots of values into a function which need default values, and optionally some read-only values too.
 
 **Parameters:**
