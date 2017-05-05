@@ -1,251 +1,133 @@
-var ME   = module.exports;
-var util = require('util');
-var _    = require('underscore');
+'use strict';
 
 /*
- * Extend the first object with subsequent objects. Specify true as the first
- * param for deep extend. This method will overwrite the first object. Nulls and
- * undefineds in source objects will be ignored.
- * [Usage]
- *  <1> extender.extend({}, {}, {}...);
- *  <2> extender.extend(true, {}, {});
+ * OBJECT EXTENDER
+ * A set of simple utilities for copying, merging and manipulating plain objects.
  */
-ME.extend = function () {
 
-  var args       = _.toArray(arguments);
-  var deepExtend = false;
-
-  if (typeof args[0] === 'boolean') {
-    deepExtend = args[0];
-    args.splice(0, 1);
-  }
-
-  return ME.smartExtend({
-    objects:         args,
-    deep:            deepExtend,
-    ignoreNull:      true,
-    ignoreUndefined: true,
-    unref:           true
-  });
-
-};
+const objectAssignDeep = require(`object-assign-deep`);
 
 /*
- * Merges all the given objects into the return value, without breaking
- * references or overwriting the original object. Nulls and undefineds in source
- * objects will also be merged in.
- * [Usage]
- *  var newObject = extender.merge({}, {}, {});
+ * Removes null and undefined values if the relevant options are set. Mutates the object passed in.
  */
-ME.merge = function () {
+function removeUndesirableProperties (object, options) {
 
-  var args = _.toArray(arguments);
+	const { ignoreNull, ignoreUndefined } = options;
 
-  return ME.smartExtend({
-    objects:         args,
-    deep:            true,
-    ignoreNull:      false,
-    ignoreUndefined: false,
-    unref:           false
-  });
+	// Nothing to ignore, nothing to do!
+	if (!ignoreNull && !ignoreUndefined) { return object; }
 
-};
+	// Enumerate all the properties.
+	for (const key in object) {
+		if (!object.hasOwnProperty(key)) { continue; }
+
+		// Step down into nested objects and tide those too.
+		if (typeof object[key] === `object` && !Array.isArray(object[key])) {
+			removeUndesirableProperties(object[key], options);
+		}
+
+		// Remove unwanted properties.
+		else if ((typeof object[key] === `undefined` && ignoreUndefined) || (object[key] === null && ignoreNull)) {
+			delete object[key];
+		}
+
+	}
+
+}
 
 /*
- * Convenience method for creating a new copy of an object. This will copy the
- * object as-is, including nulls and undefinds, it will also break references so
- * it's a clean copy.
- * [Usage]
- *  var newObject = extender.copy({});
+ * Takes an array of objects to merge and some optional configurable options.
  */
-ME.copy = function (object) {
+function extend (_objects, _options = {}) {
 
-  return ME.smartExtend({
-    objects:         [object],
-    deep:            true,
-    ignoreNull:      false,
-    ignoreUndefined: false,
-    unref:           true
-  });
+	const options = defaults({
+		ignoreNull: true,
+		ignoreUndefined: true,
+	}, _options);
 
-};
+	const objects = [];
+
+	// Optionally remove null and undefined values from all objects, excluding null values in the very first object.
+	for (let index = 0; index < _objects.length; index++) {
+		const useOptions = (index === 0 ? defaults(options, { ignoreNull: false }) : options);
+		const clonedObject = clone(_objects[index]);
+		objects.push(removeUndesirableProperties(clonedObject, useOptions));
+	}
+
+	return merge(...objects);
+
+}
 
 /*
- * Convenience method for specifying default values for object properties.
- * Useful when passing a lot of parameters into a function. The third parameter
- * 'readOnlyOptions' is optional and allows you to specify values which can not
- * be overwritten by the consumer of the function, but which you want to appear
- * in the options hash.
- * [Usage]
- *  function myFunc (options) {
- *    options = extender.defaults({ a: 1, b: 2 }, options);
- *    options = extender.defaults({ a: 1, b: 2 }, options, readOnlyOptions);
- *  };
+ * Returns a new deep merge of all the given objects with all references broken.
  */
-ME.defaults = function (defaults, values, readOnlyValues) {
-  readOnlyValues = readOnlyValues || {};
-
-  return ME.smartExtend({
-    objects:         [defaults, values, readOnlyValues],
-    deep:            true,
-    ignoreNull:      false,
-    ignoreUndefined: true,
-    unref:           true
-  });
-
-};
+function merge (...objects) {
+	return objectAssignDeep(...objects);
+}
 
 /*
- * Extend objects with additional options.
+ * Merges the given objects into the target (first parameter) object. This mutates the target object. Nested objects in
  */
-ME.smartExtend = function (options) {
-
-  var startIndex = 1;
-
-  options = _.extend({
-    objects:        [],      // An array of objects for extending.
-    deep:            false,  // Set to true to extend the objects at multiple depths recursively.
-    ignoreNull:      true,   // Set to false to allow null values in later objects to overwrite the initial values.
-    ignoreUndefined: true,   // Set to false to allow undefined values in later objects to overwrite the initial values.
-    unref:           true    // Set to true to create a new object rather than modifying the original object (by reference).
-  }, options);
-
-  // Push an empty object onto the front of the array to prevent the original
-  // object from being modified.
-  if (options.unref) {
-    options.objects.unshift({});
-    startIndex = 2;  // don't strip null values from the first 2 objects.
-  }
-
-  // Remove any nulls and undefineds from each object, not including the first
-  // object. Nulls are only removed if we are ignoring null values.
-  if (options.ignoreNull || options.ignoreUndefined) {
-    for (var o = startIndex, olen = options.objects.length; o < olen; o++) {
-      ME.tidyObject(options.objects[o], options);
-    }
-  }
-
-  // Extend deep or shallow and return the value.
-  return (options.deep ? ME.deepExtend.apply(null, options.objects) : _.extend.apply(null, options.objects));
-
-};
+function mergeInto (target, ...objects) {
+	const mergedObjects = objectAssignDeep(...objects);
+	return objectAssignDeep.into(target, mergedObjects);
+}
 
 /*
- * Removes undefineds and nulls if the options allow for it.
+ * Returns a new deep copy of the given object with all references broken.
  */
-ME.tidyObject = function (obj, options) {
-
-  for (var key in obj) {
-    if (obj.hasOwnProperty(key)) {
-
-      // Step down into nested objects and tide those too.
-      if (ME.isTrueObject(obj[key])) { ME.tidyObject(obj[key], options); }
-
-      // Remove unwanted properties.
-      if (
-        (typeof obj[key] === 'undefined' && options.ignoreUndefined) ||
-        (obj[key] === null && options.ignoreNull)
-      ) {
-        delete obj[key];
-      }
-
-    }
-  }
-
-};
+function clone (object) {
+	return objectAssignDeep(object);
+}
 
 /*
- * Recursively extends an object with subsequent objects. VERY BASIC.
- * TODO: Add support for breaking references multiple levels down.
- * [Usage]
- *  <1> extender.deepExtend({ level2: {} }, { level2: {} }...);
- */
-ME.deepExtend = function() {
-
-  // Create an array from the arguments and break references to prevent memory leaks.
-  var args = _.toArray(arguments);
-  args = args.splice(0, args.length);
-
-  // Remove the first argument and store it
-  var original = args.splice(0, 1)[0];
-
-  // Cycle remaining arguments
-  for (var a in args) {
-
-    // Cycle argument properties
-    for (var p in args[a]) {
-      if (args[a].hasOwnProperty(p)) {
-
-        // New argument property is an object
-        if (ME.isTrueObject(args[a][p])) {
-
-          // Original property is also an object, Recurse down to the next level
-          if (ME.isTrueObject(original[p])) {
-            original[p] = ME.deepExtend(original[p], args[a][p]);
-          }
-
-          // Original property is not an object
-          else {
-            original[p] = args[a][p];
-          }
-
-        }
-
-        // Other type
-        else {
-          original[p] = args[a][p];
-        }
-
-      }
-    }
-
-  }
-
-  // We have updated the original object with the values from the subsequent
-  // objects and broken the reference to the originals, so it's safe to return.
-  return original;
-
-};
-
-/*
- * Returns true if the input is a true object and not an array or function.
- */
-ME.isTrueObject = function (input) {
-  return (_.isObject(input) && !_.isArray(input) && !_.isFunction(input));
-};
-
-/*
- * Used to instantiate a constructor, and inherit the base class if specified.
+ * A useful method for passing lots of values into a function which need default values, and optionally some read-only
+ * values too.
  *
- * [Usage: Extending a base class]
- *  var MyChildClass = extender.constructor(BaseClass,
- *    function MyChildClass () {
- *      BaseClass.apply(this, arguments);
- *      ...
- *    }
- *  );
- *  MyChildClass.prototype.myFunc = function () {
- *    this.myFunc.apply(this, arguments);
- *    ...
- *  };
+ * [Param: defaultValues]
+ *   An object containing default values.
  *
- * [Usage: Creating a base class]
- *  var MyBaseClass = extender.constructor(
- *    function MyBaseClass (a, b, n...) {
- *      ...
- *    }
- *  );
- *  MyBaseClass.prototype.myFunc = function () {};
+ * [Param: actualValues]
+ *   An object containing the actual values that are being set.
+ *
+ * [Param: readOnlyValues]
+ *   An optional object containing values which should not be changed.
+ *
+ * [Example]
+ *   extender.defaults({
+ *     prop1: `Hello`,
+ * 		 prop2: `World`,
+ *     prop3: `Node`,
+ *		 special: null,
+ *	 }, {
+ *	 	 prop1: `Josh`,
+ *		 prop2: `Cole`,
+ *     special: false,
+ *	 }, {
+ *	   special: true,
+ *	 });
+ *
+ * [Expected Output]
+ *   {
+ *     prop1: `Josh`,
+ *     prop2: `Cole`,
+ *     prop3: `Node`,
+ *     special: true,
+ *   }
  */
-ME.constructor = function (parent, child) {
+function defaults (defaultValues, actualValues, readOnlyValues = {}) {
+	return objectAssignDeep(defaultValues, actualValues, readOnlyValues);
+}
 
-  // Creating a constructor without a base class
-  // extender.constructor(function ChildClass () {});
-  if (!_.isFunction(child)) { return parent; }
-
-  // Creating a constructor by extending a base class
-  // extender.constructor(BaseClass, function ChildClass () {});
-  util.inherits(child, parent);
-  return child;
-
+/*
+ * Export.
+ */
+module.exports = {
+	extend,
+	merge,
+	mergeInto,
+	mixin: mergeInto,
+	clone,
+	copy: clone,
+	defaults,
 };
