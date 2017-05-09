@@ -43,8 +43,10 @@ function extend (_objects, _options = {}) {
 	const options = defaults({
 		ignoreNull: true,
 		ignoreUndefined: true,
+		arrayBehaviour: `replace`,
 	}, _options);
 
+	const target = {};
 	const objects = [];
 
 	// Optionally remove null and undefined values from all objects, excluding null values in the very first object.
@@ -54,30 +56,30 @@ function extend (_objects, _options = {}) {
 		objects.push(removeUndesirableProperties(clonedObject, useOptions));
 	}
 
-	return merge(...objects);
+	// Perform the merge.
+	return objectAssignDeep.withOptions(target, objects, { arrayBehaviour: options.arrayBehaviour });
 
 }
 
 /*
- * Returns a new deep merge of all the given objects with all references broken.
+ * Returns a new deep merge of all the given objects with all references broken and without mutating any of the objects.
  */
 function merge (...objects) {
-	return objectAssignDeep(...objects);
+	return objectAssignDeep.noMutate(...objects);
 }
 
 /*
- * Merges the given objects into the target (first parameter) object. This mutates the target object. Nested objects in
+ * Merges the given objects into the target (first parameter) object, mutating the target object.
  */
 function mergeInto (target, ...objects) {
-	const mergedObjects = objectAssignDeep(...objects);
-	return objectAssignDeep.into(target, mergedObjects);
+	return objectAssignDeep(target, ...objects);
 }
 
 /*
  * Returns a new deep copy of the given object with all references broken.
  */
 function clone (object) {
-	return objectAssignDeep(object);
+	return objectAssignDeep.noMutate(object);
 }
 
 /*
@@ -116,7 +118,7 @@ function clone (object) {
  *   }
  */
 function defaults (defaultValues, actualValues, readOnlyValues = {}) {
-	return objectAssignDeep(defaultValues, actualValues, readOnlyValues);
+	return objectAssignDeep.noMutate(defaultValues, actualValues, readOnlyValues);
 }
 
 /*
