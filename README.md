@@ -112,3 +112,32 @@ extender.defaults({
 	special: true,
 }
 ```
+
+## API Overview
+
+### .merge(object1, object2, ...objectN)
+Merge all objects without mutating any of them and returns a fresh new object.
+
+### .mergeInto(target, object1, object2, ...objectN)
+Merge all objects into the target, mutating the target and returning it.
+
+### .mixin(target, object1, object2, ...objectN)
+Alias for `.mergeInto()`.
+
+### .clone(originalObject)
+Creates a fresh new copy of the object and returns it.
+
+### .copy(originalObject)
+Alias for `.clone()`.
+
+### .defaults(defaultValues, actualValues, readOnlyValues)
+An easy way to pass lots of parameters into a function by providing a hash of default values, an object containing the actual values to set, and optionally, a hash of read-only values that should not be changed by the actual values. This is essentially just an alias to `.merge()` but with only three parameters.
+
+### .extend(objects, options)
+Allows the behaviour of the module to be customised by providing an array of objects to merge and a number of options. Always returns a fresh new object without mutating any of the objects provided.
+
+| Option          | Default Value | Description |
+|-----------------|---------------|-------------|
+| ignoreNull      | `false`       | Set to `true` to prevent any properties in latter objects that are `null` from overwriting earlier values.
+| ignoreUndefined | `false`       | Set to `true` to prevent any properties in latter objects that are `undefined` from overwriting earlier values.
+| arrayBehaviour  | "replace"     | By default arrays in later objects will overwrite earlier values, but you can set this to "merge" if you want to concatenate the arrays instead. |
