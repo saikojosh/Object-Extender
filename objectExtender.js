@@ -5,7 +5,7 @@
  * A set of simple utilities for copying, merging and manipulating plain objects.
  */
 
-const objectAssignDeep = require(`object-assign-deep`);
+const objectAssignDeep = require('object-assign-deep');
 
 /*
  * Removes null and undefined values if the relevant options are set. Mutates the object passed in.
@@ -22,12 +22,12 @@ function removeUndesirableProperties (object, options) {
 		if (!object.hasOwnProperty(key)) { continue; }
 
 		// Step down into nested objects and tide those too.
-		if (typeof object[key] === `object` && !Array.isArray(object[key])) {
+		if (typeof object[key] === 'object' && !Array.isArray(object[key])) {
 			removeUndesirableProperties(object[key], options);
 		}
 
 		// Remove unwanted properties.
-		else if ((typeof object[key] === `undefined` && ignoreUndefined) || (object[key] === null && ignoreNull)) {
+		else if ((typeof object[key] === 'undefined' && ignoreUndefined) || (object[key] === null && ignoreNull)) {
 			delete object[key];
 		}
 
@@ -43,7 +43,7 @@ function extend (_objects, _options = {}) {
 	const options = defaults({
 		ignoreNull: true,
 		ignoreUndefined: true,
-		arrayBehaviour: `replace`,
+		arrayBehaviour: 'replace',
 	}, _options);
 
 	const target = {};
@@ -97,13 +97,13 @@ function clone (object) {
  *
  * [Example]
  *   extender.defaults({
- *     prop1: `Hello`,
- * 		 prop2: `World`,
- *     prop3: `Node`,
+ *     prop1: 'Hello',
+ * 		 prop2: 'World',
+ *     prop3: 'Node',
  *		 special: null,
  *	 }, {
- *	 	 prop1: `Josh`,
- *		 prop2: `Cole`,
+ *	 	 prop1: 'Josh',
+ *		 prop2: 'Cole',
  *     special: false,
  *	 }, {
  *	   special: true,
@@ -111,9 +111,9 @@ function clone (object) {
  *
  * [Expected Output]
  *   {
- *     prop1: `Josh`,
- *     prop2: `Cole`,
- *     prop3: `Node`,
+ *     prop1: 'Josh',
+ *     prop2: 'Cole',
+ *     prop3: 'Node',
  *     special: true,
  *   }
  */
